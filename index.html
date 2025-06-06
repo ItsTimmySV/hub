@@ -157,26 +157,28 @@ th {
       retos.push({ evento, descripcion, cantidad, telefono, usuarioA, usuarioB, ganador, fecha: hoy });
 
       if (!jugadores[usuarioA]) {
-        jugadores[usuarioA] = { ganados: 0, racha: 0, rachaMax: 0, ultimaActividad: hoy };
+        jugadores[usuarioA] = { ganados: 0, racha: 0, rachaMax: 0, ultimaActividad: null };
       }
       if (!jugadores[usuarioB]) {
         jugadores[usuarioB] = { ganados: 0, racha: 0, rachaMax: 0, ultimaActividad: null };
       }
 
-      // Actualizar sólo si es Usuario A (lanzador)
       const jugador = jugadores[usuarioA];
-      if (jugador.ultimaActividad !== hoy) {
+      if (!jugador.ultimaActividad) {
+        jugador.racha = 1; // Primer reto, empieza racha
+      } else if (jugador.ultimaActividad !== hoy) {
         const ultimaFecha = new Date(jugador.ultimaActividad);
         const fechaHoy = new Date(hoy);
-        if (jugador.ultimaActividad && diferenciaDias(ultimaFecha, fechaHoy) > 1) {
+        if (diferenciaDias(ultimaFecha, fechaHoy) > 1) {
           jugador.racha = 0; // pierde racha por inactividad
         }
         jugador.racha++;
-        if (jugador.racha > jugador.rachaMax) {
-          jugador.rachaMax = jugador.racha;
-        }
-        jugador.ultimaActividad = hoy;
       }
+
+      if (jugador.racha > jugador.rachaMax) {
+        jugador.rachaMax = jugador.racha;
+      }
+      jugador.ultimaActividad = hoy;
 
       // Actualizar ganados si gana
       if (ganador === usuarioA) {
