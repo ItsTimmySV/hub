@@ -127,6 +127,7 @@ th {
           <th>Jugador</th>
           <th>Racha Actual</th>
           <th>Racha Histórica</th>
+          <th>Última Actividad</th>
         </tr>
       </thead>
       <tbody>
@@ -151,24 +152,37 @@ th {
         return;
       }
 
-      retos.push({ evento, descripcion, cantidad, telefono, usuarioA, usuarioB, ganador });
+      const hoy = new Date().toISOString().split('T')[0];
 
-      [usuarioA, usuarioB].forEach(usuario => {
-        if (!jugadores[usuario]) {
-          jugadores[usuario] = { ganados: 0, racha: 0, rachaMax: 0 };
-        }
-      });
+      retos.push({ evento, descripcion, cantidad, telefono, usuarioA, usuarioB, ganador, fecha: hoy });
 
-      for (const usuario of [usuarioA, usuarioB]) {
-        if (usuario === ganador) {
-          jugadores[usuario].ganados++;
-          jugadores[usuario].racha++;
-          if (jugadores[usuario].racha > jugadores[usuario].rachaMax) {
-            jugadores[usuario].rachaMax = jugadores[usuario].racha;
-          }
-        } else {
-          jugadores[usuario].racha = 0;
+      if (!jugadores[usuarioA]) {
+        jugadores[usuarioA] = { ganados: 0, racha: 0, rachaMax: 0, ultimaActividad: hoy };
+      }
+      if (!jugadores[usuarioB]) {
+        jugadores[usuarioB] = { ganados: 0, racha: 0, rachaMax: 0, ultimaActividad: null };
+      }
+
+      // Actualizar sólo si es Usuario A (lanzador)
+      const jugador = jugadores[usuarioA];
+      if (jugador.ultimaActividad !== hoy) {
+        const ultimaFecha = new Date(jugador.ultimaActividad);
+        const fechaHoy = new Date(hoy);
+        if (jugador.ultimaActividad && diferenciaDias(ultimaFecha, fechaHoy) > 1) {
+          jugador.racha = 0; // pierde racha por inactividad
         }
+        jugador.racha++;
+        if (jugador.racha > jugador.rachaMax) {
+          jugador.rachaMax = jugador.racha;
+        }
+        jugador.ultimaActividad = hoy;
+      }
+
+      // Actualizar ganados si gana
+      if (ganador === usuarioA) {
+        jugadores[usuarioA].ganados++;
+      } else if (ganador === usuarioB) {
+        jugadores[usuarioB].ganados++;
       }
 
       actualizarRanking();
@@ -182,6 +196,11 @@ th {
       document.getElementById('usuarioA').value = '';
       document.getElementById('usuarioB').value = '';
       document.getElementById('ganador').value = '';
+    }
+
+    function diferenciaDias(fecha1, fecha2) {
+      const diffTime = Math.abs(fecha2 - fecha1);
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
 
     function actualizarRanking() {
@@ -208,7 +227,7 @@ th {
       tbody.innerHTML = '';
 
       const rachaArray = Object.entries(jugadores)
-        .map(([nombre, data]) => ({ nombre, racha: data.racha, rachaMax: data.rachaMax }))
+        .map(([nombre, data]) => ({ nombre, racha: data.racha, rachaMax: data.rachaMax, ultimaActividad: data.ultimaActividad }))
         .sort((a, b) => b.racha - a.racha);
 
       rachaArray.forEach(player => {
@@ -217,6 +236,7 @@ th {
           <td>${player.nombre}</td>
           <td>${player.racha}</td>
           <td>${player.rachaMax}</td>
+          <td>${player.ultimaActividad || 'Sin actividad'}</td>
         `;
         tbody.appendChild(row);
       });
