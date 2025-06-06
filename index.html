@@ -15,13 +15,13 @@
   margin-bottom: 30px;
 }
 
-.form-container, .ranking-container, .racha-container {
+.form-container, .ranking-container, .racha-container, .retos-container {
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 5px 15px rgba(0,0,0,0.1);
   padding: 20px;
   margin-bottom: 30px;
-  max-width: 600px;
+  max-width: 800px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -32,7 +32,7 @@ label {
   font-weight: bold;
 }
 
-input, select, button {
+input, select, button, textarea {
   width: 100%;
   padding: 10px;
   margin-bottom: 15px;
@@ -66,8 +66,20 @@ th {
 </head>
 <body>  <h1>🏆 Ugly Challenge Tracker 🏆</h1>  <div class="form-container">
     <h2>Registrar Reto</h2>
-    <label for="usuarioA">Usuario A (Challenge)</label>
-    <input type="text" id="usuarioA" required><label for="usuarioB">Usuario B (Contra)</label>
+    <label for="evento">Evento</label>
+    <input type="text" id="evento" required><label for="descripcion">Descripción</label>
+<textarea id="descripcion" rows="3" required></textarea>
+
+<label for="cantidad">Cantidad ($)</label>
+<input type="number" id="cantidad" required>
+
+<label for="telefono">Teléfono</label>
+<input type="text" id="telefono" required>
+
+<label for="usuarioA">Usuario A (Challenge)</label>
+<input type="text" id="usuarioA" required>
+
+<label for="usuarioB">Usuario B (Contra)</label>
 <input type="text" id="usuarioB" required>
 
 <label for="ganador">Ganador</label>
@@ -75,6 +87,24 @@ th {
 
 <button onclick="registrarReto()">Registrar</button>
 
+  </div>  <div class="retos-container">
+    <h2>Retos Registrados</h2>
+    <table id="retosTable">
+      <thead>
+        <tr>
+          <th>Evento</th>
+          <th>Descripción</th>
+          <th>Cantidad</th>
+          <th>Teléfono</th>
+          <th>Usuario A</th>
+          <th>Usuario B</th>
+          <th>Ganador</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Retos dinámicos -->
+      </tbody>
+    </table>
   </div>  <div class="ranking-container">
     <h2>Ranking</h2>
     <table id="rankingTable">
@@ -105,25 +135,30 @@ th {
     </table>
   </div>  <script>
     const jugadores = {};
+    const retos = [];
 
     function registrarReto() {
+      const evento = document.getElementById('evento').value.trim();
+      const descripcion = document.getElementById('descripcion').value.trim();
+      const cantidad = document.getElementById('cantidad').value.trim();
+      const telefono = document.getElementById('telefono').value.trim();
       const usuarioA = document.getElementById('usuarioA').value.trim();
       const usuarioB = document.getElementById('usuarioB').value.trim();
       const ganador = document.getElementById('ganador').value.trim();
 
-      if (!usuarioA || !usuarioB || !ganador) {
+      if (!evento || !descripcion || !cantidad || !telefono || !usuarioA || !usuarioB || !ganador) {
         alert('Completa todos los campos.');
         return;
       }
 
-      // Inicializar jugadores si no existen
+      retos.push({ evento, descripcion, cantidad, telefono, usuarioA, usuarioB, ganador });
+
       [usuarioA, usuarioB].forEach(usuario => {
         if (!jugadores[usuario]) {
           jugadores[usuario] = { ganados: 0, racha: 0, rachaMax: 0 };
         }
       });
 
-      // Actualizar datos
       for (const usuario of [usuarioA, usuarioB]) {
         if (usuario === ganador) {
           jugadores[usuario].ganados++;
@@ -138,8 +173,12 @@ th {
 
       actualizarRanking();
       actualizarRachas();
+      actualizarRetos();
 
-      // Limpiar inputs
+      document.getElementById('evento').value = '';
+      document.getElementById('descripcion').value = '';
+      document.getElementById('cantidad').value = '';
+      document.getElementById('telefono').value = '';
       document.getElementById('usuarioA').value = '';
       document.getElementById('usuarioB').value = '';
       document.getElementById('ganador').value = '';
@@ -178,6 +217,25 @@ th {
           <td>${player.nombre}</td>
           <td>${player.racha}</td>
           <td>${player.rachaMax}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function actualizarRetos() {
+      const tbody = document.getElementById('retosTable').querySelector('tbody');
+      tbody.innerHTML = '';
+
+      retos.forEach(reto => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${reto.evento}</td>
+          <td>${reto.descripcion}</td>
+          <td>$${reto.cantidad}</td>
+          <td>${reto.telefono}</td>
+          <td>${reto.usuarioA}</td>
+          <td>${reto.usuarioB}</td>
+          <td>${reto.ganador}</td>
         `;
         tbody.appendChild(row);
       });
