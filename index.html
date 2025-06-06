@@ -1,0 +1,186 @@
+<!DOCTYPE html><html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ugly Challenge Tracker</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 20px;
+    }h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 30px;
+}
+
+.form-container, .ranking-container, .racha-container {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  padding: 20px;
+  margin-bottom: 30px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+input, select, button {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+button {
+  background-color: #4CAF50;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background-color: #f0f0f0;
+}
+
+  </style>
+</head>
+<body>  <h1>🏆 Ugly Challenge Tracker 🏆</h1>  <div class="form-container">
+    <h2>Registrar Reto</h2>
+    <label for="usuarioA">Usuario A (Challenge)</label>
+    <input type="text" id="usuarioA" required><label for="usuarioB">Usuario B (Contra)</label>
+<input type="text" id="usuarioB" required>
+
+<label for="ganador">Ganador</label>
+<input type="text" id="ganador" required>
+
+<button onclick="registrarReto()">Registrar</button>
+
+  </div>  <div class="ranking-container">
+    <h2>Ranking</h2>
+    <table id="rankingTable">
+      <thead>
+        <tr>
+          <th>Posición</th>
+          <th>Jugador</th>
+          <th>Retos Ganados</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Ranking dinámico -->
+      </tbody>
+    </table>
+  </div>  <div class="racha-container">
+    <h2>Rachas Activas</h2>
+    <table id="rachaTable">
+      <thead>
+        <tr>
+          <th>Jugador</th>
+          <th>Racha Actual</th>
+          <th>Racha Histórica</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Rachas dinámicas -->
+      </tbody>
+    </table>
+  </div>  <script>
+    const jugadores = {};
+
+    function registrarReto() {
+      const usuarioA = document.getElementById('usuarioA').value.trim();
+      const usuarioB = document.getElementById('usuarioB').value.trim();
+      const ganador = document.getElementById('ganador').value.trim();
+
+      if (!usuarioA || !usuarioB || !ganador) {
+        alert('Completa todos los campos.');
+        return;
+      }
+
+      // Inicializar jugadores si no existen
+      [usuarioA, usuarioB].forEach(usuario => {
+        if (!jugadores[usuario]) {
+          jugadores[usuario] = { ganados: 0, racha: 0, rachaMax: 0 };
+        }
+      });
+
+      // Actualizar datos
+      for (const usuario of [usuarioA, usuarioB]) {
+        if (usuario === ganador) {
+          jugadores[usuario].ganados++;
+          jugadores[usuario].racha++;
+          if (jugadores[usuario].racha > jugadores[usuario].rachaMax) {
+            jugadores[usuario].rachaMax = jugadores[usuario].racha;
+          }
+        } else {
+          jugadores[usuario].racha = 0;
+        }
+      }
+
+      actualizarRanking();
+      actualizarRachas();
+
+      // Limpiar inputs
+      document.getElementById('usuarioA').value = '';
+      document.getElementById('usuarioB').value = '';
+      document.getElementById('ganador').value = '';
+    }
+
+    function actualizarRanking() {
+      const tbody = document.getElementById('rankingTable').querySelector('tbody');
+      tbody.innerHTML = '';
+
+      const rankingArray = Object.entries(jugadores)
+        .map(([nombre, data]) => ({ nombre, ganados: data.ganados }))
+        .sort((a, b) => b.ganados - a.ganados);
+
+      rankingArray.forEach((player, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${player.nombre}</td>
+          <td>${player.ganados}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function actualizarRachas() {
+      const tbody = document.getElementById('rachaTable').querySelector('tbody');
+      tbody.innerHTML = '';
+
+      const rachaArray = Object.entries(jugadores)
+        .map(([nombre, data]) => ({ nombre, racha: data.racha, rachaMax: data.rachaMax }))
+        .sort((a, b) => b.racha - a.racha);
+
+      rachaArray.forEach(player => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${player.nombre}</td>
+          <td>${player.racha}</td>
+          <td>${player.rachaMax}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+  </script></body>
+</html>
